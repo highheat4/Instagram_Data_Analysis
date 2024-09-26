@@ -74,7 +74,7 @@ embedding_df = pd.DataFrame(embeddings, columns=[f'img_emb_{i}' for i in range(e
 data_with_img_embeddings = pd.concat([data, embedding_df], axis=1)
 
 # Perform PCA and save to CSV files
-pca_components = [5, 20, 50, 100, 500]
+pca_components = [1, 2, 5, 20, 50, 100, 500]
 for n_components in pca_components:
     pca = PCA(n_components=n_components)
     pca_embeddings = pca.fit_transform(embedding_df)
