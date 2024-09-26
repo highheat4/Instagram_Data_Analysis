@@ -3,18 +3,19 @@ import torch.nn as nn
 import pandas as pd
 from PIL import Image
 from transformers import ViTFeatureExtractor
-from transformers import ViTModel, ViTFeatureExtractor
+from transformers import ViTModel
 from sklearn.decomposition import PCA
 
-# Define the same ViTRegressionModel as in vit_train.py
+# Define ViTRegressionModel with original architecture
 class ViTRegressionModel(nn.Module):
     def __init__(self, pretrained_model_name='google/vit-base-patch16-224'):
         super(ViTRegressionModel, self).__init__()
         self.vit = ViTModel.from_pretrained(pretrained_model_name)
         self.regressor = nn.Sequential(
-            nn.Linear(self.vit.config.hidden_size, 512),
+            nn.Linear(self.vit.config.hidden_size, 256),
             nn.ReLU(),
-            nn.Linear(512, 1)
+            nn.Dropout(0.1),
+            nn.Linear(256, 1)
         )
     
     def forward(self, pixel_values):
@@ -30,7 +31,7 @@ def load_trained_model(model_path):
     return model
 
 # Load the fine-tuned model
-trained_model = load_trained_model('./core/trained_models/best_model_notransform.pth')
+trained_model = load_trained_model('./core/trained_models/best_model_notransform_nocomments.pth')
 
 # Load feature extractor (same as during training)
 feature_extractor = ViTFeatureExtractor.from_pretrained('google/vit-base-patch16-224')
