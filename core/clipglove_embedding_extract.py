@@ -1,6 +1,7 @@
 import torch
 from transformers import CLIPProcessor, CLIPModel
 import pandas as pd
+import gensim.downloader
 from PIL import Image
 import os
 from sklearn.decomposition import PCA
@@ -9,6 +10,9 @@ import numpy as np
 # Load the CLIP model and processor
 model = CLIPModel.from_pretrained("openai/clip-vit-base-patch16")
 processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch16")
+
+# Load GloVe embeddings using gensim downloader
+glove_vectors = gensim.downloader.load('glove-wiki-gigaword-300')
 
 # Read the CSV with image embeddings
 data = pd.read_csv('./new_instagram_data.csv')
@@ -79,24 +83,38 @@ def get_top_label(image_path):
         print(f"Error processing image {image_path}: {e}")
         return ""  # Return an empty string in case of an error
 
-# Loop through each row and append the top-1 label
-top_labels = []
+# Function to convert text labels into GloVe embeddings
+def get_word_embedding(label):
+    words = label.split()
+    word_embeddings = [glove_vectors[word] for word in words if word in glove_vectors]
+    
+    if word_embeddings:
+        # Average the word embeddings if the label has more than one word
+        return np.mean(word_embeddings, axis=0)
+    else:
+        # Return a zero vector if the word is not found in GloVe
+        return np.zeros(300)
+
+# Loop through each row, get the top-1 label, and append word embeddings
+word_embeddings = []
 for idx, row in data.iterrows():
     image_path = row['image_path'].split('/')[-1]  # Get the filename only
     top_label = get_top_label(image_path)
-    top_labels.append(top_label)
+    word_embedding = get_word_embedding(top_label)
+    word_embeddings.append(word_embedding)
 
-# Add the top-1 label to the DataFrame
-data['top_label'] = top_labels
+# Convert list of word embeddings to a DataFrame
+word_embedding_df = pd.DataFrame(word_embeddings, columns=[f'word_emb_{i}' for i in range(300)])
+data_with_word_embeddings = pd.concat([data, word_embedding_df], axis=1)
 
-# Save the DataFrame with the top-1 label to a CSV file
-data.to_csv('./core/new_csvs/data_with_top_label.csv', index=False)
+# Save the DataFrame with word embeddings to a CSV file
+data_with_word_embeddings.to_csv('./core/new_csvs/data_with_word_embeddings.csv', index=False)
 
 # Perform PCA for different numbers of components and save to separate CSV files
 pca_components = [1, 2, 5, 20, 50, 100, 200]
 for n_components in pca_components:
     pca = PCA(n_components=n_components)
-    pca_embeddings = pca.fit_transform(data[['top_label']])  # Apply PCA on labels if required
+    pca_embeddings = pca.fit_transform(word_embedding_df)  # Apply PCA on embeddings
     pca_embedding_df = pd.DataFrame(pca_embeddings, columns=[f'word_pca_emb_{i}' for i in range(n_components)])
     
     # Combine with original data (if needed) or save separately

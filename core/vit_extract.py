@@ -30,7 +30,7 @@ def load_trained_model(model_path):
     return model
 
 # Load the fine-tuned model
-trained_model = load_trained_model('./core/trained_models/fine_tuned_vit_model.pth')
+trained_model = load_trained_model('./core/trained_models/best_model_notransform.pth')
 
 # Load feature extractor (same as during training)
 feature_extractor = ViTFeatureExtractor.from_pretrained('google/vit-base-patch16-224')

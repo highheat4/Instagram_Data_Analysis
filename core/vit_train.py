@@ -63,7 +63,7 @@ train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=16, shuffle=False)
 
 model = ViTRegressionModel()
-model.load_state_dict(torch.load('./core/trained_models/best_model_notransform.pth'))
+# model.load_state_dict(torch.load('./core/trained_models/best_model_notransform.pth'))
 
 # Freeze the ViT layers initially
 for param in model.vit.parameters():
@@ -81,7 +81,7 @@ scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model.to(device)
 
-num_epochs = 30
+num_epochs = 100
 best_val_loss = float('inf')
 patience = 3
 no_improve = 0
@@ -123,7 +123,7 @@ for epoch in range(num_epochs):
     
     if val_loss < best_val_loss:
         best_val_loss = val_loss
-        torch.save(model.state_dict(), './core/trained_models/best_model_notransform.pth')
+        torch.save(model.state_dict(), './core/trained_models/best_model_notransform_nocomments.pth')
         no_improve = 0
     else:
         no_improve += 1
@@ -132,7 +132,7 @@ for epoch in range(num_epochs):
             break
 
 # Load best model for evaluation
-model.load_state_dict(torch.load('./core/trained_models/best_model_notransform.pth'))
+model.load_state_dict(torch.load('./core/trained_models/best_model_notransform_nocomments.pth'))
 model.eval()
 
 y_true = []
@@ -161,7 +161,7 @@ plt.scatter(y_true, y_pred, alpha=0.5)
 plt.plot([y_true.min(), y_true.max()], [y_true.min(), y_true.max()], 'r--')
 plt.xlabel('Actual Likes')
 plt.ylabel('Predicted Likes')
-plt.title('Actual vs Predicted Likes for ViT Model: With Comments')
+plt.title('Actual vs Predicted Likes for ViT Model: Without Comments')
 plt.legend(['Perfect Prediction', 'Model Predictions'])
 plt.xscale('log')
 plt.yscale('log')
