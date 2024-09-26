@@ -82,9 +82,10 @@ def get_top3_labels(image_path):
         top3_labels = [text_labels[idx] for idx in top3_indices]
         
         # ! To see progress, uncomment
-        global i
-        print(i, top3_labels) 
-        i += 1
+        # global i
+        # if i % 100 == 0:
+        #     print(i, top3_labels) 
+        # i += 1
         
         return list(zip(top3_labels, top3_logits))
     except Exception as e:
