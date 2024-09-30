@@ -56,7 +56,7 @@ def extract_image_embedding(image_path, feature_extractor, model):
         return None
 
 # Load your CSV data
-data = pd.read_csv('./new_instagram_data.csv')
+data = pd.read_csv('./instagram_data.csv')
 data['image_path'] = data['image_path'].apply(lambda x: x.replace('../Data/insta_data/', './insta_data/'))
 
 # Loop through each row in the CSV and extract embeddings
@@ -83,9 +83,9 @@ for n_components in pca_components:
     
     # Combine with original data and save
     data_with_pca_embeddings = pd.concat([data.reset_index(drop=True), pca_embedding_df], axis=1)
-    pca_filename = f'./core/new_csvs/data_with_img_pca_embeddings_{n_components}.csv'
+    pca_filename = f'./core/new_csvs/data_with_img_pca_embeddings_raw_{n_components}.csv'
     data_with_pca_embeddings.to_csv(pca_filename, index=False)
     print(f'Saved PCA embeddings with {n_components} dimensions to {pca_filename}')
 
 # Save the DataFrame with image embeddings
-data_with_img_embeddings.to_csv('./core/new_csvs/data_with_img_embeddings.csv', index=False)
+data_with_img_embeddings.to_csv('./core/new_csvs/data_with_img_embeddings_raw.csv', index=False)
